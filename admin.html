@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NUST Admin Panel</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --glass-bg: rgba(255,255,255,0.15);
+      --primary: #1a3a6e;
+      --accent: #2563eb;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --warn: #f59e0b;
+      --radius: 18px;
+      --radius-sm: 10px;
+    }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0891b2 100%);
+      min-height: 100vh;
+      color: #1e293b;
+    }
+
+    /* GLASS */
+    .glass { background:rgba(255,255,255,0.13);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1.5px solid rgba(255,255,255,0.25);border-radius:var(--radius);box-shadow:0 8px 32px rgba(0,0,0,0.2); }
+    .glass-white { background:rgba(255,255,255,0.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1.5px solid rgba(255,255,255,0.6);border-radius:var(--radius);box-shadow:0 8px 40px rgba(0,51,153,0.12); }
+
+    /* LOGIN */
+    #admin-login {
+      min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+      position:relative;
+    }
+    #admin-login::before {
+      content:'';position:fixed;inset:0;
+      background:url('nust.jpg') center/cover no-repeat;
+      opacity:0.1;z-index:0;pointer-events:none;
+    }
+    .login-wrap { position:relative;z-index:1;width:100%;max-width:420px;display:flex;flex-direction:column;gap:16px; }
+    .logo-block { text-align:center;color:white; }
+    .logo-block h1 { font-size:28px;font-weight:800;text-shadow:0 2px 12px rgba(0,0,0,0.4); }
+    .logo-block p { font-size:13px;opacity:0.75;margin-top:4px;letter-spacing:1px;text-transform:uppercase; }
+    .admin-badge { display:inline-flex;align-items:center;gap:6px;background:rgba(245,158,11,0.2);border:1px solid rgba(245,158,11,0.4);color:#fcd34d;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;margin-top:8px; }
+
+    /* MAIN PANEL */
+    #admin-panel { display:none;min-height:100vh; }
+    .panel-header {
+      background:rgba(255,255,255,0.1);backdrop-filter:blur(16px);
+      border-bottom:1px solid rgba(255,255,255,0.15);
+      padding:14px 24px;
+      display:flex;align-items:center;justify-content:space-between;
+      position:sticky;top:0;z-index:100;
+    }
+    .panel-header h1 { color:white;font-size:18px;font-weight:800; }
+    .panel-header p { color:rgba(255,255,255,0.7);font-size:12px; }
+    .header-actions { display:flex;gap:10px;align-items:center; }
+
+    /* TABS */
+    .tab-bar { display:flex;gap:4px;padding:16px 20px 0;overflow-x:auto; }
+    .tab-btn {
+      padding:9px 20px;border-radius:10px 10px 0 0;
+      background:rgba(255,255,255,0.1);border:none;
+      color:rgba(255,255,255,0.65);font-size:13px;font-weight:600;
+      cursor:pointer;transition:all 0.2s;white-space:nowrap;
+      border-bottom:3px solid transparent;
+    }
+    .tab-btn.active { background:rgba(255,255,255,0.22);color:white;border-bottom-color:#60a5fa; }
+    .tab-btn:hover:not(.active) { background:rgba(255,255,255,0.15); }
+    .tab-pane { display:none;padding:20px; }
+    .tab-pane.active { display:block; }
+
+    /* CONTENT CARDS */
+    .content-card { background:rgba(255,255,255,0.95);border-radius:var(--radius);overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.12);margin-bottom:16px; }
+    .card-header { background:linear-gradient(135deg,#1e3a6e,#2563eb);color:white;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px; }
+    .card-header h3 { font-size:15px;font-weight:700; }
+    .card-body { padding:20px; }
+
+    /* STATS ROW */
+    .stats-row { display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:20px; }
+    .stat-box { background:rgba(255,255,255,0.12);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.2);border-radius:var(--radius-sm);padding:18px;color:white;text-align:center; }
+    .stat-box .val { font-size:36px;font-weight:800;line-height:1; }
+    .stat-box .lbl { font-size:11px;opacity:0.75;text-transform:uppercase;letter-spacing:0.5px;margin-top:4px; }
+
+    /* TABLE */
+    .table-wrap { overflow-x:auto; }
+    table { width:100%;border-collapse:collapse; }
+    th { background:rgba(30,58,110,0.07);padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid rgba(203,213,225,0.6); }
+    td { padding:10px 14px;font-size:13px;color:#334155;border-bottom:1px solid rgba(203,213,225,0.25);vertical-align:top; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:rgba(239,246,255,0.5); }
+
+    /* FORMS */
+    .fg { margin-bottom:14px; }
+    .fg label { display:block;font-size:11px;font-weight:700;color:#334155;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px; }
+    .fg input,.fg select,.fg textarea {
+      width:100%;padding:10px 14px;border:1.5px solid rgba(148,163,184,0.4);border-radius:var(--radius-sm);
+      font-size:13px;outline:none;background:rgba(248,250,252,0.9);color:#1e293b;transition:all 0.2s;
+    }
+    .fg input:focus,.fg select:focus,.fg textarea:focus { border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,0.1);background:white; }
+    .fg textarea { min-height:60px;resize:vertical; }
+    .form-row { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+
+    /* BUTTONS */
+    .btn { display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;text-decoration:none;white-space:nowrap; }
+    .btn-primary { background:linear-gradient(135deg,#1e3a6e,#2563eb);color:white;box-shadow:0 4px 14px rgba(37,99,235,0.3); }
+    .btn-primary:hover { transform:translateY(-1px);box-shadow:0 6px 18px rgba(37,99,235,0.4); }
+    .btn-danger { background:linear-gradient(135deg,#b91c1c,#ef4444);color:white; }
+    .btn-danger:hover { opacity:0.9; }
+    .btn-success { background:linear-gradient(135deg,#15803d,#22c55e);color:white; }
+    .btn-warn { background:linear-gradient(135deg,#92400e,#f59e0b);color:white; }
+    .btn-ghost { background:transparent;color:#64748b;border:1.5px solid #e2e8f0; }
+    .btn-ghost:hover { border-color:#2563eb;color:#2563eb; }
+    .btn-sm { padding:5px 12px;font-size:11px;border-radius:7px; }
+    .btn-block { width:100%; }
+    .btn-group { display:flex;gap:6px;flex-wrap:wrap; }
+
+    /* BADGES */
+    .badge { display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase; }
+    .badge-success { background:rgba(34,197,94,0.15);color:#15803d;border:1px solid rgba(34,197,94,0.3); }
+    .badge-danger { background:rgba(239,68,68,0.15);color:#b91c1c;border:1px solid rgba(239,68,68,0.3); }
+    .badge-info { background:rgba(6,182,212,0.15);color:#0e7490;border:1px solid rgba(6,182,212,0.3); }
+    .badge-warn { background:rgba(245,158,11,0.15);color:#92400e;border:1px solid rgba(245,158,11,0.3); }
+
+    /* MODAL */
+    .modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);justify-content:center;align-items:flex-start;padding:30px 20px;z-index:9999;overflow-y:auto; }
+    .modal.open { display:flex; }
+    .modal-box { background:white;border-radius:var(--radius);padding:26px;width:100%;max-width:580px;box-shadow:0 20px 60px rgba(0,0,0,0.25);position:relative;margin:auto; }
+    .modal-box.wide { max-width:800px; }
+    .modal-box h3 { font-size:16px;font-weight:700;color:#1e3a5f;margin-bottom:16px; }
+    .modal-close { position:absolute;top:14px;right:14px;background:rgba(203,213,225,0.4);border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:15px;color:#64748b;display:flex;align-items:center;justify-content:center; }
+    .modal-close:hover { background:rgba(239,68,68,0.15);color:#ef4444; }
+
+    /* TOAST */
+    #toast-c { position:fixed;bottom:20px;right:20px;z-index:99999;display:flex;flex-direction:column;gap:8px; }
+    .toast { background:#1e293b;color:white;padding:11px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,0.25);animation:toastIn 0.3s;display:flex;align-items:center;gap:8px;max-width:320px; }
+    .toast.success { border-left:4px solid #22c55e; }
+    .toast.error { border-left:4px solid #ef4444; }
+    .toast.info { border-left:4px solid #06b6d4; }
+    @keyframes toastIn { from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)} }
+
+    /* BIO DATA DISPLAY */
+    .bio-grid { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
+    .bio-item { background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px; }
+    .bio-item .bio-key { font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.4px; }
+    .bio-item .bio-val { font-size:13px;color:#1e293b;margin-top:3px;font-weight:500; }
+
+    /* REVIEW LOG */
+    .review-section { margin-top:14px; }
+    .review-section-title { background:#1e3a6e;color:white;padding:7px 12px;font-size:12px;font-weight:700;border-radius:6px 6px 0 0; }
+    .review-q { border:1px solid #e2e8f0;padding:11px;font-size:12px;border-left:4px solid #ef4444;background:#fff9f9;margin-bottom:6px; }
+    .review-q.correct { border-left-color:#22c55e;background:#f0fdf4; }
+
+    /* SEARCH */
+    .search-bar { position:relative; }
+    .search-bar input { width:100%;padding:9px 14px 9px 36px;border:1.5px solid rgba(148,163,184,0.4);border-radius:var(--radius-sm);font-size:13px;outline:none;background:white; }
+    .search-bar input:focus { border-color:#2563eb; }
+    .search-bar::before { content:'🔍';position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none; }
+
+    /* PW WRAP */
+    .pw-wrap { position:relative; }
+    .pw-wrap input { padding-right:58px; }
+    .pw-toggle { position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(203,213,225,0.5);border:none;padding:3px 7px;border-radius:5px;font-size:10px;font-weight:700;color:#475569;cursor:pointer;text-transform:uppercase; }
+
+    .hidden { display:none !important; }
+    @media(max-width:600px) {
+      .form-row { grid-template-columns:1fr; }
+      .bio-grid { grid-template-columns:1fr; }
+      .stats-row { grid-template-columns:1fr 1fr; }
+      .tab-bar { padding:12px 12px 0; }
+      .tab-pane { padding:12px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════ ADMIN LOGIN ═══════════ -->
+<div id="admin-login">
+  <div class="login-wrap">
+    <div class="logo-block">
+      <h1>🛡️ Admin Panel</h1>
+      <p>NUST Mock Test — Administration</p>
+      <div class="admin-badge">⚠️ Restricted Access</div>
+    </div>
+    <div class="glass-white" style="padding:28px 30px;">
+      <h2 style="font-size:17px;font-weight:700;color:#1e3a5f;margin-bottom:4px;">Administrator Login</h2>
+      <p style="font-size:12px;color:#64748b;margin-bottom:20px;">Enter your admin credentials to continue</p>
+      <div class="fg">
+        <label>Admin Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="admin-pw" placeholder="Enter admin password">
+          <button class="pw-toggle" onclick="toggleAdminPw()">Show</button>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-block" onclick="doAdminLogin()">Access Admin Panel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ADMIN PANEL ═══════════ -->
+<div id="admin-panel">
+  <div class="panel-header">
+    <div>
+      <h1>⚙️ NUST Admin Panel</h1>
+      <p>Manage students, tests, and assessments</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-warn btn-sm" onclick="refreshAll()">↺ Refresh</button>
+      <button class="btn btn-danger btn-sm" onclick="adminLogout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div style="padding:16px 20px 0;">
+    <div class="stats-row">
+      <div class="stat-box"><div class="val" id="a-stat-students">0</div><div class="lbl">Total Students</div></div>
+      <div class="stat-box"><div class="val" id="a-stat-active">0</div><div class="lbl">Active Accounts</div></div>
+      <div class="stat-box"><div class="val" id="a-stat-tests">0</div><div class="lbl">Total Tests</div></div>
+      <div class="stat-box"><div class="val" id="a-stat-bio">0</div><div class="lbl">Profiles Complete</div></div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('students')">👥 Students</button>
+    <button class="tab-btn" onclick="switchTab('tests')">📝 All Tests</button>
+    <button class="tab-btn" onclick="switchTab('biodata')">📋 Bio Data</button>
+  </div>
+
+  <!-- ── TAB: STUDENTS ── -->
+  <div class="tab-pane active" id="tab-students">
+    <div class="content-card">
+      <div class="card-header">
+        <h3>👥 Student Management</h3>
+        <button class="btn btn-success btn-sm" onclick="openAddStudentModal()">+ Add Student</button>
+      </div>
+      <div class="card-body">
+        <div class="search-bar" style="margin-bottom:14px;">
+          <input type="text" id="student-search" placeholder="Search by name or username..." oninput="filterStudents()">
+        </div>
+        <div class="table-wrap">
+          <table id="students-table">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Profile</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="students-tbody">
+              <tr><td colspan="7" style="color:#94a3b8;text-align:center;padding:20px;">Loading students...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: ALL TESTS ── -->
+  <div class="tab-pane" id="tab-tests">
+    <div class="content-card">
+      <div class="card-header">
+        <h3>📝 All Test Records</h3>
+        <span id="tests-count-badge" class="badge badge-info">0 records</span>
+      </div>
+      <div class="card-body">
+        <div class="search-bar" style="margin-bottom:14px;">
+          <input type="text" id="tests-search" placeholder="Search by student or field..." oninput="filterTests()">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Field</th>
+                <th>Score</th>
+                <th>Percentage</th>
+                <th>Time Taken</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tests-tbody">
+              <tr><td colspan="7" style="color:#94a3b8;text-align:center;padding:20px;">Loading test records...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: BIO DATA ── -->
+  <div class="tab-pane" id="tab-biodata">
+    <div class="content-card">
+      <div class="card-header">
+        <h3>📋 Student Bio Data</h3>
+      </div>
+      <div class="card-body">
+        <div class="search-bar" style="margin-bottom:14px;">
+          <input type="text" id="bio-search" placeholder="Search students..." oninput="filterBioData()">
+        </div>
+        <div id="biodata-list">
+          <p style="color:#94a3b8;font-size:13px;">Loading...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODALS ══════════ -->
+
+<!-- Add Student -->
+<div class="modal" id="modal-add-student">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-add-student')">×</button>
+    <h3>➕ Add New Student</h3>
+    <div class="form-row">
+      <div class="fg"><label>Username / Roll No *</label><input type="text" id="ns-username" placeholder="NUST-786"></div>
+      <div class="fg"><label>Full Name *</label><input type="text" id="ns-name" placeholder="Muhammad Ali"></div>
+    </div>
+    <div class="form-row">
+      <div class="fg">
+        <label>Password *</label>
+        <div class="pw-wrap">
+          <input type="password" id="ns-password" placeholder="Set a password">
+          <button class="pw-toggle" onclick="togglePw('ns-password',this)">Show</button>
+        </div>
+      </div>
+      <div class="fg"><label>Email</label><input type="email" id="ns-email" placeholder="student@email.com"></div>
+    </div>
+    <div class="btn-group" style="margin-top:8px;">
+      <button class="btn btn-primary" onclick="doAddStudent()">Add Student</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-student')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Student -->
+<div class="modal" id="modal-edit-student">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-edit-student')">×</button>
+    <h3>✏️ Edit Student</h3>
+    <input type="hidden" id="edit-username">
+    <div class="form-row">
+      <div class="fg"><label>Full Name</label><input type="text" id="edit-name" placeholder="Full name"></div>
+      <div class="fg"><label>Email</label><input type="email" id="edit-email" placeholder="email"></div>
+    </div>
+    <div class="fg">
+      <label>New Password (leave blank to keep current)</label>
+      <div class="pw-wrap">
+        <input type="password" id="edit-password" placeholder="New password">
+        <button class="pw-toggle" onclick="togglePw('edit-password',this)">Show</button>
+      </div>
+    </div>
+    <div class="fg">
+      <label>Account Status</label>
+      <select id="edit-active">
+        <option value="true">Active</option>
+        <option value="false">Disabled</option>
+      </select>
+    </div>
+    <div class="btn-group" style="margin-top:8px;">
+      <button class="btn btn-primary" onclick="doEditStudent()">Save Changes</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-edit-student')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- View Bio Data -->
+<div class="modal" id="modal-biodata">
+  <div class="modal-box wide">
+    <button class="modal-close" onclick="closeModal('modal-biodata')">×</button>
+    <h3>📋 Student Bio Data</h3>
+    <div id="biodata-detail-content">Loading...</div>
+  </div>
+</div>
+
+<!-- View Test Detail (with review) -->
+<div class="modal" id="modal-test-detail">
+  <div class="modal-box wide">
+    <button class="modal-close" onclick="closeModal('modal-test-detail')">×</button>
+    <h3>📝 Test Detail & Review</h3>
+    <div id="test-detail-content">Loading...</div>
+  </div>
+</div>
+
+<!-- Confirm Delete -->
+<div class="modal" id="modal-confirm">
+  <div class="modal-box" style="max-width:380px;">
+    <button class="modal-close" onclick="closeModal('modal-confirm')">×</button>
+    <h3 style="color:#b91c1c;">⚠️ Confirm Delete</h3>
+    <p id="confirm-msg" style="font-size:13px;color:#475569;margin-bottom:20px;line-height:1.6;"></p>
+    <div class="btn-group">
+      <button class="btn btn-danger" id="confirm-ok-btn">Delete</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-confirm')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-c"></div>
+
+<script>
+const API_BASE = 'https://nust-mock-test.YOUR_SUBDOMAIN.workers.dev'; // ← CHANGE THIS
+let adminToken = '';
+let allStudents = [];
+let allTests = [];
+
+// ── AUTH ──────────────────────────────────────
+function toggleAdminPw() {
+  const i = document.getElementById('admin-pw');
+  i.type = i.type === 'password' ? 'text' : 'password';
+}
+
+function togglePw(id, btn) {
+  const i = document.getElementById(id);
+  if (i.type === 'password') { i.type='text'; btn.textContent='Hide'; }
+  else { i.type='password'; btn.textContent='Show'; }
+}
+
+async function doAdminLogin() {
+  const pw = document.getElementById('admin-pw').value.trim();
+  if (!pw) { toast('Enter password', 'error'); return; }
+  try {
+    const res = await apiCall('/api/admin/login', 'POST', { password: pw });
+    if (res.error) { toast('Invalid password', 'error'); return; }
+    adminToken = res.token;
+    sessionStorage.setItem('admin_token', adminToken);
+    document.getElementById('admin-login').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'block';
+    toast('Admin access granted', 'success');
+    refreshAll();
+  } catch(e) {
+    toast('Connection error', 'error');
+  }
+}
+
+function adminLogout() {
+  adminToken = '';
+  sessionStorage.removeItem('admin_token');
+  document.getElementById('admin-panel').style.display = 'none';
+  document.getElementById('admin-login').style.display = 'flex';
+  document.getElementById('admin-pw').value = '';
+}
+
+// ── API ──────────────────────────────────────
+async function apiCall(path, method='GET', body=null, token=null) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  const t = token || adminToken;
+  if (t) opts.headers['Authorization'] = `Bearer ${t}`;
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(API_BASE + path, opts);
+  return res.json();
+}
+
+// ── TOAST ──────────────────────────────────────
+function toast(msg, type='info') {
+  const c = document.getElementById('toast-c');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  const icons = {success:'✅',error:'❌',info:'ℹ️'};
+  t.innerHTML = `<span>${icons[type]||'•'}</span> ${msg}`;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+// ── TABS ──────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ── MODALS ──────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ── REFRESH ──────────────────────────────────────
+async function refreshAll() {
+  await loadStudents();
+  await loadAllTests();
+  updateStats();
+}
+
+// ── STUDENTS ──────────────────────────────────────
+async function loadStudents() {
+  try {
+    const data = await apiCall('/api/admin/students');
+    allStudents = data.students || [];
+    renderStudentsTable(allStudents);
+  } catch(e) {
+    toast('Failed to load students', 'error');
+  }
+}
+
+function renderStudentsTable(students) {
+  const tbody = document.getElementById('students-tbody');
+  if (!students.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="color:#94a3b8;text-align:center;padding:20px;">No students found</td></tr>';
+    return;
+  }
+  tbody.innerHTML = students.map(s => `
+    <tr>
+      <td><strong>${s.username}</strong></td>
+      <td>${s.name}</td>
+      <td>${s.email || '–'}</td>
+      <td><span class="badge ${s.active ? 'badge-success' : 'badge-danger'}">${s.active ? 'Active' : 'Disabled'}</span></td>
+      <td><span class="badge ${s.bioDataSubmitted ? 'badge-success' : 'badge-warn'}">${s.bioDataSubmitted ? 'Complete' : 'Pending'}</span></td>
+      <td style="font-size:11px;color:#64748b;">${new Date(s.createdAt).toLocaleDateString()}</td>
+      <td>
+        <div class="btn-group">
+          <button class="btn btn-primary btn-sm" onclick="openEditStudent('${s.username}')">Edit</button>
+          <button class="btn btn-sm" style="background:#0e7490;color:white;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;border:none;cursor:pointer;" onclick="viewBioData('${s.username}')">Bio</button>
+          <button class="btn btn-sm" style="background:#6d28d9;color:white;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;border:none;cursor:pointer;" onclick="viewStudentTests('${s.username}')">Tests</button>
+          <button class="btn btn-danger btn-sm" onclick="confirmDelete('${s.username}')">Delete</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function filterStudents() {
+  const q = document.getElementById('student-search').value.toLowerCase();
+  renderStudentsTable(allStudents.filter(s =>
+    s.username.toLowerCase().includes(q) || (s.name||'').toLowerCase().includes(q)
+  ));
+}
+
+function openAddStudentModal() {
+  ['ns-username','ns-name','ns-email'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('ns-password').value = '';
+  openModal('modal-add-student');
+}
+
+async function doAddStudent() {
+  const username = document.getElementById('ns-username').value.trim();
+  const name = document.getElementById('ns-name').value.trim();
+  const password = document.getElementById('ns-password').value.trim();
+  const email = document.getElementById('ns-email').value.trim();
+  if (!username || !password || !name) { toast('Username, name and password required', 'error'); return; }
+  try {
+    const res = await apiCall('/api/admin/students', 'POST', { username, name, password, email });
+    if (res.error) { toast(res.error, 'error'); return; }
+    toast(`Student ${username} added!`, 'success');
+    closeModal('modal-add-student');
+    await loadStudents();
+    updateStats();
+  } catch(e) {
+    toast('Failed to add student', 'error');
+  }
+}
+
+function openEditStudent(username) {
+  const s = allStudents.find(x => x.username === username);
+  if (!s) return;
+  document.getElementById('edit-username').value = s.username;
+  document.getElementById('edit-name').value = s.name;
+  document.getElementById('edit-email').value = s.email || '';
+  document.getElementById('edit-password').value = '';
+  document.getElementById('edit-active').value = s.active ? 'true' : 'false';
+  openModal('modal-edit-student');
+}
+
+async function doEditStudent() {
+  const username = document.getElementById('edit-username').value;
+  const payload = {
+    name: document.getElementById('edit-name').value.trim(),
+    email: document.getElementById('edit-email').value.trim(),
+    active: document.getElementById('edit-active').value === 'true',
+  };
+  const newPw = document.getElementById('edit-password').value.trim();
+  if (newPw) payload.password = newPw;
+  try {
+    const res = await apiCall(`/api/admin/students/${encodeURIComponent(username)}`, 'PUT', payload);
+    if (res.error) { toast(res.error, 'error'); return; }
+    toast('Student updated!', 'success');
+    closeModal('modal-edit-student');
+    await loadStudents();
+  } catch(e) {
+    toast('Update failed', 'error');
+  }
+}
+
+function confirmDelete(username) {
+  document.getElementById('confirm-msg').textContent =
+    `Are you sure you want to permanently delete student "${username}" and all their test records? This cannot be undone.`;
+  document.getElementById('confirm-ok-btn').onclick = () => doDeleteStudent(username);
+  openModal('modal-confirm');
+}
+
+async function doDeleteStudent(username) {
+  try {
+    const res = await apiCall(`/api/admin/students/${encodeURIComponent(username)}`, 'DELETE');
+    if (res.error) { toast(res.error, 'error'); return; }
+    toast(`Student ${username} deleted.`, 'success');
+    closeModal('modal-confirm');
+    await refreshAll();
+  } catch(e) {
+    toast('Delete failed', 'error');
+  }
+}
+
+// ── BIO DATA ──────────────────────────────────────
+async function viewBioData(username) {
+  openModal('modal-biodata');
+  document.getElementById('biodata-detail-content').innerHTML = '<p style="color:#94a3b8;">Loading...</p>';
+  try {
+    const data = await apiCall(`/api/student/biodata/${encodeURIComponent(username)}`);
+    const b = data.bioData;
+    if (!b) {
+      document.getElementById('biodata-detail-content').innerHTML = '<p style="color:#f59e0b;font-size:13px;">⚠️ Bio data not submitted yet.</p>';
+      return;
+    }
+    const fields = [
+      ['Full Name', b.fullName],['Date of Birth', b.dob],['Gender', b.gender],['CNIC', b.cnic],
+      ['Phone', b.phone],['Email', b.email],['Address', b.address],
+      ['Matric Board', b.matricBoard],['Matric Year', b.matricYear],
+      ['Matric Marks', `${b.matricMarks} / ${b.matricTotal}`],
+      ['Inter Board', b.interBoard],['Inter Year', b.interYear],
+      ['Inter Marks', `${b.interMarks} / ${b.interTotal}`],
+      ['Inter Group', b.interGroup],['College', b.college],
+      ['1st Choice (NUST)', b.nust1stChoice],['2nd Choice (NUST)', b.nust2ndChoice],
+      ['Heard From', b.hearSource],['Notes', b.notes || '–'],
+      ['Submitted At', new Date(b.submittedAt).toLocaleString()],
+    ];
+    const html = `
+      <p style="font-size:12px;color:#64748b;margin-bottom:14px;">Student: <strong>${username}</strong></p>
+      <div class="bio-grid">
+        ${fields.map(([k,v]) => `<div class="bio-item"><div class="bio-key">${k}</div><div class="bio-val">${v||'–'}</div></div>`).join('')}
+      </div>`;
+    document.getElementById('biodata-detail-content').innerHTML = html;
+  } catch(e) {
+    document.getElementById('biodata-detail-content').innerHTML = '<p style="color:#ef4444;">Error loading data</p>';
+  }
+}
+
+// ── ALL BIO DATA TAB ──────────────────────────────────────
+function renderBioDataTab() {
+  const list = document.getElementById('biodata-list');
+  const withBio = allStudents.filter(s => s.bioDataSubmitted);
+  if (!withBio.length) {
+    list.innerHTML = '<p style="color:#94a3b8;font-size:13px;">No students have submitted bio data yet.</p>';
+    return;
+  }
+  list.innerHTML = withBio.map(s => `
+    <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #e2e8f0;border-radius:10px;padding:12px 16px;margin-bottom:10px;background:#f8fafc;">
+      <div>
+        <strong style="color:#1e3a5f;">${s.name}</strong>
+        <span style="color:#64748b;font-size:12px;margin-left:8px;">(${s.username})</span>
+        <span class="badge badge-success" style="margin-left:8px;">Profile Complete</span>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="viewBioData('${s.username}')">View Details</button>
+    </div>`).join('');
+}
+
+function filterBioData() {
+  const q = document.getElementById('bio-search').value.toLowerCase();
+  const withBio = allStudents.filter(s => s.bioDataSubmitted &&
+    (s.username.toLowerCase().includes(q) || (s.name||'').toLowerCase().includes(q)));
+  if (!withBio.length) {
+    document.getElementById('biodata-list').innerHTML = '<p style="color:#94a3b8;font-size:13px;">No matches found.</p>';
+    return;
+  }
+  document.getElementById('biodata-list').innerHTML = withBio.map(s => `
+    <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #e2e8f0;border-radius:10px;padding:12px 16px;margin-bottom:10px;background:#f8fafc;">
+      <div>
+        <strong style="color:#1e3a5f;">${s.name}</strong>
+        <span style="color:#64748b;font-size:12px;margin-left:8px;">(${s.username})</span>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="viewBioData('${s.username}')">View Details</button>
+    </div>`).join('');
+}
+
+// ── TESTS ──────────────────────────────────────
+async function loadAllTests() {
+  try {
+    const data = await apiCall('/api/admin/tests');
+    allTests = data.tests || [];
+    renderTestsTable(allTests);
+    document.getElementById('tests-count-badge').textContent = `${allTests.length} records`;
+  } catch(e) {
+    toast('Failed to load tests', 'error');
+  }
+}
+
+function renderTestsTable(tests) {
+  const tbody = document.getElementById('tests-tbody');
+  if (!tests.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="color:#94a3b8;text-align:center;padding:20px;">No test records found</td></tr>';
+    return;
+  }
+  tbody.innerHTML = tests.map(t => {
+    const pct = Math.round((t.score / t.totalMCQs) * 100);
+    const mins = Math.floor((t.timeTakenSeconds||0) / 60);
+    const secs = (t.timeTakenSeconds||0) % 60;
+    const badgeClass = pct >= 80 ? 'badge-success' : pct >= 50 ? 'badge-info' : 'badge-danger';
+    return `<tr>
+      <td><strong>${t.username}</strong></td>
+      <td><span class="badge badge-info">${t.fieldCode || '–'}</span> ${t.fieldLabel||''}</td>
+      <td><strong>${t.score} / ${t.totalMCQs}</strong></td>
+      <td><span class="badge ${badgeClass}">${pct}%</span></td>
+      <td style="font-size:12px;color:#64748b;">${mins}m ${secs}s</td>
+      <td style="font-size:11px;color:#64748b;">${new Date(t.savedAt).toLocaleString()}</td>
+      <td>
+        <button class="btn btn-primary btn-sm" onclick="viewTestDetail('${t.username}','${t.testId}')">View Review</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterTests() {
+  const q = document.getElementById('tests-search').value.toLowerCase();
+  renderTestsTable(allTests.filter(t =>
+    (t.username||'').toLowerCase().includes(q) ||
+    (t.fieldLabel||'').toLowerCase().includes(q) ||
+    (t.fieldCode||'').toLowerCase().includes(q)
+  ));
+}
+
+async function viewStudentTests(username) {
+  // Switch to tests tab and filter
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-tests').classList.add('active');
+  document.querySelectorAll('.tab-btn')[1].classList.add('active');
+  document.getElementById('tests-search').value = username;
+  filterTests();
+}
+
+async function viewTestDetail(username, testId) {
+  openModal('modal-test-detail');
+  document.getElementById('test-detail-content').innerHTML = '<p style="color:#94a3b8;">Loading full test review...</p>';
+  try {
+    const data = await apiCall(`/api/test/${encodeURIComponent(username)}/${encodeURIComponent(testId)}`);
+    if (data.error) {
+      document.getElementById('test-detail-content').innerHTML = '<p style="color:#ef4444;">Error loading test.</p>';
+      return;
+    }
+    const pct = Math.round((data.score / data.totalMCQs) * 100);
+    const mins = Math.floor((data.timeTakenSeconds||0) / 60);
+    const html = `
+      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+        <div style="flex:1;min-width:160px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:28px;font-weight:800;color:#0369a1;">${data.score} / ${data.totalMCQs}</div>
+          <div style="font-size:11px;color:#64748b;text-transform:uppercase;margin-top:2px;">Total Score</div>
+        </div>
+        <div style="flex:1;min-width:160px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:28px;font-weight:800;color:#15803d;">${pct}%</div>
+          <div style="font-size:11px;color:#64748b;text-transform:uppercase;margin-top:2px;">Percentage</div>
+        </div>
+        <div style="flex:1;min-width:160px;background:#fef9c3;border:1px solid #fde047;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:28px;font-weight:800;color:#92400e;">${mins}m</div>
+          <div style="font-size:11px;color:#64748b;text-transform:uppercase;margin-top:2px;">Time Taken</div>
+        </div>
+      </div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px;font-size:13px;line-height:1.7;margin-bottom:14px;">
+        ${data.breakdown || '<span style="color:#94a3b8;">No breakdown data.</span>'}
+      </div>
+      <div style="font-size:13px;line-height:1.6;">
+        ${data.reviewLog || '<p style="color:#94a3b8;">No review log.</p>'}
+      </div>`;
+    document.getElementById('test-detail-content').innerHTML = html;
+  } catch(e) {
+    document.getElementById('test-detail-content').innerHTML = '<p style="color:#ef4444;">Error loading test details.</p>';
+  }
+}
+
+// ── STATS ──────────────────────────────────────
+function updateStats() {
+  document.getElementById('a-stat-students').textContent = allStudents.length;
+  document.getElementById('a-stat-active').textContent = allStudents.filter(s => s.active).length;
+  document.getElementById('a-stat-tests').textContent = allTests.length;
+  document.getElementById('a-stat-bio').textContent = allStudents.filter(s => s.bioDataSubmitted).length;
+  renderBioDataTab();
+}
+
+// ── INIT ──────────────────────────────────────
+window.addEventListener('load', () => {
+  const saved = sessionStorage.getItem('admin_token');
+  if (saved) {
+    adminToken = saved;
+    document.getElementById('admin-login').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'block';
+    refreshAll();
+  }
+});
+</script>
+</body>
+</html>
