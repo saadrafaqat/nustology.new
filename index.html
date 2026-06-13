@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "3783bac929334b3eac2b0e9e69617817"}'></script>
+  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="icon" href="icon.png" type="image/png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NUST(NET) Computer Based Mock Test</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <script src="questions.js"></script>
+  <style>
+    /* ── RESET & BASE ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --glass-bg: rgba(255,255,255,0.18);
+      --glass-border: rgba(255,255,255,0.35);
+      --glass-shadow: 0 8px 32px rgba(0,51,153,0.18);
+      --primary: #1a3a6e;
+      --accent: #2563eb;
+      --accent2: #06b6d4;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --warn: #f59e0b;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --radius: 20px;
+      --radius-sm: 12px;
+    }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 40%, #0891b2 100%);
+      min-height: 100vh;
+      color: var(--text);
+      user-select: none;
+    }
+
+    /* ── GLASSMORPHISM CARD ── */
+    .glass-card {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1.5px solid rgba(255,255,255,0.3);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.4);
+    }
+    .glass-card-white {
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1.5px solid rgba(255,255,255,0.6);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 40px rgba(0,51,153,0.15), inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    /* ── SCREENS ── */
+    .screen {
+      display: none;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .screen.active { display: flex; }
+    .screen::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: url('nust.jpg') center/cover no-repeat;
+      opacity: 0.12;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .screen-inner {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .screen-inner.wide { max-width: 600px; }
+
+    /* ── LOGO / HEADER ── */
+    .portal-logo {
+      text-align: center;
+      color: white;
+      margin-bottom: 4px;
+    }
+    .portal-logo h1 {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    }
+    .portal-logo p {
+      font-size: 12px;
+      color: rgba(255,255,255,0.75);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+    .portal-logo .badge-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(34,197,94,0.2);
+      border: 1px solid rgba(34,197,94,0.4);
+      color: #86efac;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-top: 8px;
+    }
+    .pulse-dot {
+      width: 7px; height: 7px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34,197,94,0.6); }
+      50% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+    }
+
+    /* ── FORM ── */
+    .form-card { padding: 28px 30px; }
+    .form-card h2 { font-size: 18px; font-weight: 700; color: #1e3a5f; margin-bottom: 4px; }
+    .form-card .sub { font-size: 12px; color: var(--text-light); margin-bottom: 20px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid rgba(148,163,184,0.4);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      outline: none;
+      background: rgba(248,250,252,0.8);
+      color: var(--text);
+      transition: all 0.2s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--accent);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+    }
+    .form-group textarea { resize: vertical; min-height: 70px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .pw-wrap { position: relative; }
+    .pw-wrap input { padding-right: 60px; }
+    .pw-toggle {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      background: rgba(203,213,225,0.5); border: none;
+      padding: 4px 8px; border-radius: 6px;
+      font-size: 10px; font-weight: 700; color: #475569;
+      cursor: pointer; text-transform: uppercase;
+    }
+    .pw-toggle:hover { background: rgba(203,213,225,0.9); }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 12px 22px; border: none; border-radius: var(--radius-sm);
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: all 0.2s; text-decoration: none;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #1e3a6e, #2563eb);
+      color: white;
+      box-shadow: 0 4px 16px rgba(37,99,235,0.35);
+      width: 100%;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.4); }
+    .btn-ghost {
+      background: transparent; color: rgba(255,255,255,0.7);
+      border: 1px solid rgba(255,255,255,0.25); width: 100%;
+      font-size: 13px;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.1); color: white; }
+    .btn-danger {
+      background: linear-gradient(135deg, #b91c1c, #ef4444);
+      color: white;
+    }
+    .btn-success {
+      background: linear-gradient(135deg, #15803d, #22c55e);
+      color: white;
+    }
+    .btn-sm { padding: 6px 14px; font-size: 12px; border-radius: 8px; }
+
+    /* ── FIELD CARDS ── */
+    .field-selector { display: flex; flex-direction: column; gap: 8px; }
+    .field-card {
+      display: flex; align-items: center; gap: 14px;
+      border: 1.5px solid rgba(148,163,184,0.3);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      cursor: pointer;
+      background: rgba(248,250,252,0.7);
+      transition: all 0.2s;
+    }
+    .field-card:hover { border-color: var(--accent); background: rgba(239,246,255,0.8); }
+    .field-card.selected {
+      border-color: var(--accent);
+      background: rgba(219,234,254,0.8);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+    }
+    .field-card input[type="radio"] { display: none; }
+    .fc-radio {
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 2px solid #94a3b8; flex-shrink: 0;
+      background: white; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .field-card.selected .fc-radio {
+      border-color: var(--accent);
+      background: var(--accent);
+    }
+    .field-card.selected .fc-radio::after {
+      content: '';
+      width: 6px; height: 6px;
+      background: white; border-radius: 50%;
+    }
+    .fc-content { flex: 1; }
+    .fc-title { font-weight: 700; font-size: 13px; color: #1e3a5f; }
+    .fc-detail { font-size: 11px; color: #64748b; margin-top: 2px; }
+    .fc-weight { font-size: 10px; color: #0891b2; background: rgba(8,145,178,0.1); padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 3px; }
+    .fc-code { font-size: 11px; font-weight: 800; color: var(--accent); background: rgba(37,99,235,0.1); padding: 4px 10px; border-radius: 6px; flex-shrink: 0; }
+
+    /* ── BIO DATA FORM (multi-section) ── */
+    .bio-section-title {
+      font-size: 13px; font-weight: 700; color: #1e3a5f;
+      border-bottom: 2px solid rgba(37,99,235,0.2);
+      padding-bottom: 6px; margin: 16px 0 12px;
+    }
+
+    /* ── DASHBOARD ── */
+    .dash-screen { display: none; }
+    .dash-screen.active { display: block; }
+    .dash-wrap {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 40%, #0891b2 100%);
+      padding: 20px;
+    }
+    .dash-header {
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: var(--radius);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      color: white;
+    }
+    .dash-header h2 { font-size: 18px; font-weight: 700; }
+    .dash-header p { font-size: 12px; opacity: 0.75; margin-top: 2px; }
+    .dash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px; }
+    .stat-card {
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      color: white;
+    }
+    .stat-card .stat-val { font-size: 32px; font-weight: 800; margin: 4px 0; }
+    .stat-card .stat-lbl { font-size: 12px; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-card .stat-icon { font-size: 28px; margin-bottom: 6px; }
+
+    /* ── TABLE ── */
+    .table-card {
+      background: rgba(255,255,255,0.95);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      margin-bottom: 20px;
+    }
+    .table-card-header {
+      background: linear-gradient(135deg, #1e3a6e, #2563eb);
+      color: white;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .table-card-header h3 { font-size: 15px; font-weight: 700; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: rgba(30,58,110,0.06);
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      color: #334155;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      border-bottom: 1px solid rgba(203,213,225,0.5);
+    }
+    td {
+      padding: 10px 16px;
+      font-size: 13px;
+      color: #334155;
+      border-bottom: 1px solid rgba(203,213,225,0.3);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(239,246,255,0.5); }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-success { background: rgba(34,197,94,0.15); color: #15803d; border: 1px solid rgba(34,197,94,0.3); }
+    .badge-danger { background: rgba(239,68,68,0.15); color: #b91c1c; border: 1px solid rgba(239,68,68,0.3); }
+    .badge-info { background: rgba(6,182,212,0.15); color: #0e7490; border: 1px solid rgba(6,182,212,0.3); }
+    .badge-warn { background: rgba(245,158,11,0.15); color: #92400e; border: 1px solid rgba(245,158,11,0.3); }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      justify-content: center;
+      align-items: flex-start;
+      padding: 30px 20px;
+      z-index: 9999;
+      overflow-y: auto;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box {
+      background: white;
+      border-radius: var(--radius);
+      padding: 28px;
+      width: 100%;
+      max-width: 540px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      position: relative;
+      margin: auto;
+    }
+    .modal-box h3 { font-size: 17px; font-weight: 700; color: #1e3a5f; margin-bottom: 16px; }
+    .modal-close {
+      position: absolute; top: 16px; right: 16px;
+      background: rgba(203,213,225,0.5); border: none;
+      width: 30px; height: 30px; border-radius: 50%;
+      cursor: pointer; font-size: 16px; color: #64748b;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-close:hover { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+    /* ── TOAST ── */
+    #toast-container {
+      position: fixed; bottom: 24px; right: 24px;
+      z-index: 99999; display: flex; flex-direction: column; gap: 10px;
+    }
+    .toast {
+      background: #1e293b; color: white;
+      padding: 12px 18px; border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 500;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      animation: toastIn 0.3s ease;
+      display: flex; align-items: center; gap: 8px;
+      max-width: 320px;
+    }
+    .toast.success { border-left: 4px solid #22c55e; }
+    .toast.error { border-left: 4px solid #ef4444; }
+    .toast.info { border-left: 4px solid #06b6d4; }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+    /* ── EXAM (unchanged structure, just keeping original) ── */
+    .exam-interface { display: none; padding: 10px; background: #fff; min-height: 100vh; }
+    * { box-sizing: border-box; }
+    .test-table { width:100%; border-collapse:collapse; border:3px double #0055A5; margin-bottom:8px; }
+    .top-header-row { background:#FFF; border-bottom:2px solid #0055A5; color:#008000; font-weight:bold; padding:6px 10px; font-size:14px; text-transform:uppercase; }
+    .stream-title { text-align:center; color:#FF0000; font-weight:bold; font-size:13px; border-bottom:2px solid #0055A5; padding:5px; background:#F9F9F9; }
+    .workspace-container { display:flex; border-bottom:2px solid #0055A5; min-height:300px; }
+    .left-main-canvas { flex:1; display:flex; flex-direction:column; border-right:2px solid #0055A5; }
+    .question-meta-bar { background:#D4E6F1; color:#003399; font-weight:bold; font-size:13px; padding:5px 10px; border-bottom:1px solid #0055A5; display:flex; justify-content:space-between; }
+    .question-body-pane { padding:18px 20px; font-size:15px; font-weight:600; color:#000; min-height:100px; border-bottom:2px solid #0055A5; line-height:1.6; background:#FFF; text-align:left; }
+    .passage-container { background:#F8F9FA; border:1px solid #BDC3C7; border-left:4px solid #0055A5; padding:14px 16px; margin-bottom:14px; font-weight:400; font-size:14px; line-height:1.7; color:#333; border-radius:4px; }
+    .passage-label { font-size:11px; font-weight:700; color:#0055A5; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+    .question-text { font-weight:600; font-size:15px; }
+    .question-diagram { display:block; max-width:280px; height:auto; margin:12px auto; border-radius:6px; border:1px solid #D5DBDB; }
+    .options-pane-title { background:#D4E6F1; color:#003399; font-weight:bold; font-size:13px; padding:5px 10px; border-bottom:1px solid #0055A5; }
+    .options-list-wrapper { padding:12px 15px; display:flex; flex-direction:column; gap:6px; background:#FFF; flex:1; }
+    .option-row-item { display:flex; align-items:center; border:1px solid #A9CCE3; padding:10px 14px; background:white; cursor:pointer; border-radius:4px; }
+    .option-row-item:hover { background:#EBF5FB; border-color:#2980B9; }
+    .option-row-item.selected { background:#D4E6F1; border:1px solid #0055A5; font-weight:bold; }
+    .option-row-item::before { content:''; display:inline-block; width:18px; height:18px; border-radius:50%; border:2px solid #A9CCE3; margin-right:12px; flex-shrink:0; background:white; transition:all 0.2s; }
+    .option-row-item.selected::before { border-color:#0055A5; background:#0055A5; box-shadow:inset 0 0 0 3px white; }
+    .option-text { text-align:left; font-size:14px; }
+    .right-photo-panel { width:160px; padding:12px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; background:#FFF; }
+    .photo-box-frame { width:120px; height:140px; border:1px solid #003399; display:flex; align-items:center; justify-content:center; text-align:center; font-weight:bold; font-size:13px; color:#555; background:#FAFAFA; margin-bottom:12px; }
+    .navigation-grid-wrapper { border:1px solid #0055A5; margin:8px 0; padding:8px; background:#F2F4F4; }
+    .nav-section-label { display:flex; align-items:center; gap:8px; margin:4px 0 6px 0; }
+    .nav-section-label span { font-size:10px; font-weight:bold; color:#003399; background:#D4E6F1; padding:2px 10px; border-radius:3px; text-transform:uppercase; }
+    .nav-sub-grid { display:grid; gap:3px; margin-bottom:8px; }
+    .nav-square-btn { background:#E5E7E9; border:1px solid #7F8C8D; text-align:center; font-size:10px; padding:4px 0; cursor:pointer; font-weight:bold; color:#000; border-radius:2px; }
+    .nav-square-btn.active-focus { border:2px solid #FF0000; background:#FFF; color:#FF0000; }
+    .nav-square-btn.filled { background:#2ECC71; color:white; border-color:#27AE60; }
+    .nav-square-btn.flagged-review { background:#F1C40F; color:black; border-color:#D4AC0D; }
+    .bottom-action-row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; background:#FFF; flex-wrap:wrap; gap:6px; }
+    .timer-dashboard { display:flex; border:1px solid #008000; background:#FFF; height:48px; align-items:center; flex-shrink:0; }
+    .timer-left-banner { background:#008000; color:#FFF; font-size:10px; padding:5px 8px; height:100%; display:flex; flex-direction:column; justify-content:center; font-weight:bold; text-align:center; text-transform:uppercase; }
+    .timer-countdown-clock { font-size:22px; font-weight:bold; color:#008000; padding:0 10px; font-family:monospace; min-width:120px; text-align:center; }
+    .finish-trigger-link { color:#003399; font-weight:bold; text-decoration:underline; cursor:pointer; font-size:12px; }
+    .button-bar-right { display:flex; gap:3px; align-items:center; flex-wrap:wrap; }
+    .retro-control-btn { padding:5px 10px; font-size:11px; font-weight:bold; color:white; border:1px solid #2471A3; cursor:pointer; border-radius:3px; white-space:nowrap; }
+    .btn-system { background:linear-gradient(to bottom,#3498DB,#2980B9); }
+    .btn-navigational { background:linear-gradient(to bottom,#5DADE2,#2874A6); }
+    .btn-review-retro { background:linear-gradient(to bottom,#F39C12,#D35400); border-color:#B03A2E; }
+    .btn-subject { background:linear-gradient(to bottom,#34495E,#2C3E50); border-color:#1A252F; }
+
+    /* ── RESULT MODAL ── */
+    .result-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); justify-content:center; align-items:flex-start; padding:20px; z-index:9999; overflow-y:auto; }
+    .result-overlay.active { display:flex; }
+    .result-box { background:white; border-radius:var(--radius); max-width:720px; width:100%; padding:28px; box-shadow:0 20px 60px rgba(0,0,0,0.3); margin:auto; }
+    .score-output { font-size:42px; font-weight:800; color:#008000; text-align:center; margin:12px 0; font-family:monospace; }
+    .review-header-r { background:#003399; color:white; padding:8px 14px; font-size:13px; font-weight:700; margin-top:16px; border-radius:6px 6px 0 0; }
+    .review-box-r { border:1px solid #e2e8f0; padding:12px; margin-top:0; font-size:13px; line-height:1.5; border-left:5px solid #ef4444; background:#fff9f9; border-radius:0 0 4px 4px; margin-bottom:8px; }
+    .review-box-r.correct { border-left-color:#22c55e; background:#f0fdf4; }
+
+    /* ── TEST HISTORY ── */
+    .history-section { margin-top: 24px; }
+    .history-card {
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: var(--radius-sm);
+      padding: 16px 20px;
+      color: white;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .history-card:hover { background: rgba(255,255,255,0.18); transform: translateY(-1px); }
+    .history-card h4 { font-size: 14px; font-weight: 700; }
+    .history-card p { font-size: 12px; opacity: 0.75; margin-top: 3px; }
+    .history-card .score-pill {
+      display: inline-block;
+      background: rgba(34,197,94,0.2);
+      border: 1px solid rgba(34,197,94,0.4);
+      color: #86efac;
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    .hidden { display: none !important; }
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; }
+      .screen-inner { max-width: 100%; }
+      .dash-wrap { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════
+     SCREEN 1: LOGIN
+═══════════════════════════════════ -->
+<div class="screen active" id="screen-login">
+  <div class="screen-inner">
+    <div class="portal-logo">
+      <h1>NUST Mock Test</h1>
+      <p>Computer Based Assessment Portal</p>
+      <div class="badge-live"><div class="pulse-dot"></div> System Operational</div>
+    </div>
+    <div class="glass-card-white form-card">
+      <h2>Student Login</h2>
+      <p class="sub">Enter your credentials provided by the administrator</p>
+      <div class="form-group">
+        <label>Roll Number / Username</label>
+        <input type="text" id="login-username" placeholder="e.g., NUST-786" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="login-password" placeholder="Enter your password" autocomplete="current-password">
+          <button type="button" class="pw-toggle" onclick="togglePw('login-password',this)">Show</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="doStudentLogin()">
+        <span>Login to Portal</span>
+      </button>
+      <div style="margin-top:14px;text-align:center;">
+        <a href="admin.html" style="font-size:12px;color:#64748b;text-decoration:none;">Admin Panel →</a>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:14px 18px;font-size:12px;color:rgba(255,255,255,0.75);line-height:1.7;">
+      <strong style="color:#fbbf24;">Instructions:</strong><br>
+      • Total duration: 180 minutes (200 MCQs)<br>
+      • No negative marking — +1 per correct answer<br>
+      • Click <strong>Save</strong> after each answer to record your selection
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SCREEN 2: BIO DATA FORM
+═══════════════════════════════════ -->
+<div class="screen" id="screen-biodata">
+  <div class="screen-inner wide">
+    <div class="portal-logo">
+      <h1>Profile Setup</h1>
+      <p>Complete your academic profile before the test</p>
+    </div>
+    <div class="glass-card-white form-card">
+      <h2>Student Information Form</h2>
+      <p class="sub">This is a one-time form. All fields are required for test eligibility.</p>
+
+      <div class="bio-section-title">📋 Personal Information</div>
+      <div class="form-row">
+        <div class="form-group"><label>Full Name</label><input type="text" id="bio-fullname" placeholder="Muhammad Ali Khan"></div>
+        <div class="form-group"><label>Date of Birth</label><input type="date" id="bio-dob"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Gender</label>
+          <select id="bio-gender">
+            <option value="">Select...</option>
+            <option>Male</option><option>Female</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label>CNIC / B-Form No.</label><input type="text" id="bio-cnic" placeholder="35202-XXXXXXX-X"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Phone Number</label><input type="tel" id="bio-phone" placeholder="03XX-XXXXXXX"></div>
+        <div class="form-group"><label>Email Address</label><input type="email" id="bio-email" placeholder="student@email.com"></div>
+      </div>
+      <div class="form-group"><label>Permanent Address</label><textarea id="bio-address" placeholder="House No, Street, City, Province"></textarea></div>
+
+      <div class="bio-section-title">🎓 Academic Background</div>
+      <div class="form-row">
+        <div class="form-group"><label>Matric Board</label>
+          <select id="bio-matric-board">
+            <option value="">Select Board...</option>
+            <option>FBISE (Federal)</option><option>Lahore Board</option><option>Karachi Board</option>
+            <option>Rawalpindi Board</option><option>Faisalabad Board</option><option>Multan Board</option>
+            <option>Gujranwala Board</option><option>Sargodha Board</option><option>Peshawar Board</option>
+            <option>AJK Board</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Matric Year</label><input type="number" id="bio-matric-year" placeholder="2022" min="2010" max="2030"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Matric Marks Obtained</label><input type="number" id="bio-matric-marks" placeholder="950"></div>
+        <div class="form-group"><label>Matric Total Marks</label><input type="number" id="bio-matric-total" placeholder="1100"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Intermediate Board</label>
+          <select id="bio-inter-board">
+            <option value="">Select Board...</option>
+            <option>FBISE (Federal)</option><option>Lahore Board</option><option>Karachi Board</option>
+            <option>Rawalpindi Board</option><option>Faisalabad Board</option><option>Multan Board</option>
+            <option>Gujranwala Board</option><option>Sargodha Board</option><option>Peshawar Board</option>
+            <option>AJK Board</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Inter Year / Expected</label><input type="number" id="bio-inter-year" placeholder="2024" min="2010" max="2030"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Inter Marks Obtained</label><input type="number" id="bio-inter-marks" placeholder="1000"></div>
+        <div class="form-group"><label>Inter Total Marks</label><input type="number" id="bio-inter-total" placeholder="1100"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Inter Group / Subjects</label>
+          <select id="bio-inter-group">
+            <option value="">Select...</option>
+            <option>Pre-Engineering (Maths, Physics, Chemistry)</option>
+            <option>Pre-Medical (Bio, Physics, Chemistry)</option>
+            <option>ICS (Maths, Physics, Computer)</option>
+            <option>ICS (Maths, Computer, Statistics)</option>
+            <option>Commerce (Accounts, Economics, Business Maths)</option>
+            <option>Humanities / General</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label>School/College Name</label><input type="text" id="bio-college" placeholder="Cadet College Hasanabdal"></div>
+      </div>
+
+      <div class="bio-section-title">🏫 NUST Preferences</div>
+      <div class="form-row">
+        <div class="form-group"><label>1st Choice Campus/School</label>
+          <select id="bio-nust1">
+            <option value="">Select...</option>
+            <option>SEECS (Electrical)</option><option>SMME (Mechanical)</option>
+            <option>SCME (Civil)</option><option>SNS (Natural Sciences)</option>
+            <option>SCEE (Chemical & Energy)</option><option>RIMMS (Business)</option>
+            <option>SMCS (Computing)</option><option>NBS (Business School)</option>
+            <option>NIPS (Physics)</option><option>SADA (Architecture)</option>
+            <option>CAE (Aeronautical)</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label>2nd Choice Campus/School</label>
+          <select id="bio-nust2">
+            <option value="">Select...</option>
+            <option>SEECS (Electrical)</option><option>SMME (Mechanical)</option>
+            <option>SCME (Civil)</option><option>SNS (Natural Sciences)</option>
+            <option>SCEE (Chemical & Energy)</option><option>RIMMS (Business)</option>
+            <option>SMCS (Computing)</option><option>NBS (Business School)</option>
+            <option>NIPS (Physics)</option><option>SADA (Architecture)</option>
+            <option>CAE (Aeronautical)</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label>How did you hear about this mock test?</label>
+        <select id="bio-source">
+          <option value="">Select...</option>
+          <option>Social Media</option><option>Friend/Family</option>
+          <option>Teacher/Academy</option><option>NUST website</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Additional Notes (optional)</label>
+        <textarea id="bio-notes" placeholder="Any special requirements or notes..."></textarea>
+      </div>
+
+      <button class="btn btn-primary" onclick="submitBioData()" style="margin-top:8px;">
+        Save Profile & Continue →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SCREEN 3: STUDENT DASHBOARD
+═══════════════════════════════════ -->
+<div class="dash-screen" id="screen-dashboard">
+  <div class="dash-wrap">
+    <div class="dash-header">
+      <div>
+        <h2 id="dash-welcome">Welcome, Student</h2>
+        <p id="dash-subtext">NUST Mock Test Portal</p>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="doLogout()">Logout</button>
+    </div>
+
+    <div class="dash-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📝</div>
+        <div class="stat-val" id="dash-total-tests">0</div>
+        <div class="stat-lbl">Tests Taken</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🏆</div>
+        <div class="stat-val" id="dash-best-score">–</div>
+        <div class="stat-lbl">Best Score</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-val" id="dash-avg-score">–</div>
+        <div class="stat-lbl">Average Score</div>
+      </div>
+      <div class="stat-card" style="cursor:pointer;" onclick="showFieldSelect()">
+        <div class="stat-icon">🚀</div>
+        <div class="stat-val" style="font-size:16px;margin-top:6px;">Start Test</div>
+        <div class="stat-lbl">New Assessment</div>
+      </div>
+    </div>
+
+    <!-- Test History -->
+    <div class="table-card">
+      <div class="table-card-header">
+        <h3>📋 My Test History</h3>
+        <button class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:white;border:none;" onclick="loadMyTests()">↺ Refresh</button>
+      </div>
+      <div id="test-history-list" style="padding:16px;">
+        <p style="color:#94a3b8;font-size:13px;">Loading test history...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SCREEN 4: FIELD SELECTION
+═══════════════════════════════════ -->
+<div class="screen" id="screen-field">
+  <div class="screen-inner wide">
+    <div class="portal-logo">
+      <h1>Select Your Stream</h1>
+      <p>Choose your test field / category</p>
+    </div>
+    <div class="glass-card-white form-card">
+      <h2>Test Field Selection</h2>
+      <p class="sub">Select the appropriate stream matching your academic background</p>
+      <div class="field-selector" id="fieldSelectorContainer">
+        <label class="field-card" onclick="selectField(this,'engineering')">
+          <input type="radio" name="fieldChoice" value="engineering">
+          <div class="fc-radio"></div>
+          <div class="fc-content">
+            <div class="fc-title">NET-Engineering</div>
+            <div class="fc-detail">HSSC Pre-Engg / ICS / equivalent</div>
+            <div class="fc-weight">Mathematics 50% · Physics 30% · English 20%</div>
+          </div>
+          <div class="fc-code">ENG</div>
+        </label>
+        <label class="field-card" onclick="selectField(this,'applied_sciences')">
+          <input type="radio" name="fieldChoice" value="applied_sciences">
+          <div class="fc-radio"></div>
+          <div class="fc-content">
+            <div class="fc-title">NET-Applied Sciences</div>
+            <div class="fc-detail">HSSC Pre-Medical / equivalent</div>
+            <div class="fc-weight">Biology 50% · Chemistry 30% · English 20%</div>
+          </div>
+          <div class="fc-code">APS</div>
+        </label>
+        <label class="field-card" onclick="selectField(this,'business_studies')">
+          <input type="radio" name="fieldChoice" value="business_studies">
+          <div class="fc-radio"></div>
+          <div class="fc-content">
+            <div class="fc-title">NET-Business Studies & Social Sciences</div>
+            <div class="fc-detail">HSSC with any combination</div>
+            <div class="fc-weight">Quantitative Mathematics 50% · English 50%</div>
+          </div>
+          <div class="fc-code">BUS</div>
+        </label>
+        <label class="field-card" onclick="selectField(this,'architecture')">
+          <input type="radio" name="fieldChoice" value="architecture">
+          <div class="fc-radio"></div>
+          <div class="fc-content">
+            <div class="fc-title">NET-Architecture / Industrial Design</div>
+            <div class="fc-detail">HSSC with Maths and Physics</div>
+            <div class="fc-weight">Design Aptitude 50% · Mathematics 30% · English 20%</div>
+          </div>
+          <div class="fc-code">ARC</div>
+        </label>
+        <label class="field-card" onclick="selectField(this,'natural_sciences')">
+          <input type="radio" name="fieldChoice" value="natural_sciences">
+          <div class="fc-radio"></div>
+          <div class="fc-content">
+            <div class="fc-title">NET-Natural Sciences</div>
+            <div class="fc-detail">HSSC / equivalent</div>
+            <div class="fc-weight">Mathematics 50% · English 50%</div>
+          </div>
+          <div class="fc-code">NSC</div>
+        </label>
+      </div>
+      <button class="btn btn-primary" onclick="startExam()" style="margin-top:16px;">Start Assessment →</button>
+      <button class="btn btn-ghost" onclick="backToDashboard()" style="margin-top:8px;color:#64748b;border-color:#e2e8f0;">← Back to Dashboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SCREEN 5: EXAM INTERFACE
+═══════════════════════════════════ -->
+<div class="exam-interface" id="examPortalView">
+  <div class="test-table">
+    <div class="top-header-row" id="currentSubjectHeader">MATHEMATICS</div>
+    <div class="stream-title" id="streamTitleBar">Engineering Stream Mock Portal</div>
+    <div class="workspace-container">
+      <div class="left-main-canvas">
+        <div class="question-meta-bar">
+          <span id="questionNumTracker">Question No: 1 of 100</span>
+          <span>Marks: 1</span>
+        </div>
+        <div class="question-body-pane" id="questionTextBox">Loading question...</div>
+        <div class="options-pane-title">Answer (Please select your correct option)</div>
+        <div class="options-list-wrapper" id="optionsRadioGroup"></div>
+      </div>
+      <div class="right-photo-panel">
+        <div class="photo-box-frame">Your<br>Image<br>here</div>
+        <div style="font-size:11px;font-weight:bold;color:#0055A5;text-align:center;line-height:1.5;">
+          Candidate ID:<br><span style="color:#FF0000" id="displayCandidateId">–</span><br>
+          <span id="displayFieldCode" style="color:#003399;font-size:10px;">ENG</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="navigation-grid-wrapper" id="navButtonMatrixGrid"></div>
+  <div class="bottom-action-row">
+    <div class="timer-dashboard">
+      <div class="timer-left-banner">Remaining<br>Time</div>
+      <div class="timer-countdown-clock" id="timerClockMinutes">03:00:00</div>
+    </div>
+    <div><span class="finish-trigger-link" onclick="triggerSubmitConfirmation()">Click here to <b>FINISH</b> Test</span></div>
+    <div class="button-bar-right" id="sectionButtonsContainer">
+      <button class="retro-control-btn btn-system" onclick="saveAnswerState()">Save</button>
+      <button class="retro-control-btn btn-navigational" onclick="shiftActiveIndex(1)">Next &gt;</button>
+      <button class="retro-control-btn btn-navigational" onclick="shiftActiveIndex(-1)">&lt; Prev</button>
+      <button class="retro-control-btn btn-review-retro" onclick="flagQuestionToggle()">Review</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     RESULT MODAL
+═══════════════════════════════════ -->
+<div class="result-overlay" id="resultOverlay">
+  <div class="result-box">
+    <h2 style="color:#0055A5;font-size:20px;text-align:center;">NUST Examination Result</h2>
+    <p style="text-align:center;font-size:13px;color:#64748b;margin-top:6px;">Scoring: +1 correct, 0 incorrect (no negative marking)</p>
+    <div class="score-output" id="totalScoreTarget">0 / 200</div>
+    <div id="subjectScoreBreakdownBox" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px;font-size:13px;line-height:1.7;margin-bottom:16px;"></div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:20px;">
+      <button class="btn btn-primary" style="width:auto;" onclick="backToDashboard()">← Back to Dashboard</button>
+      <button class="btn btn-success btn-sm" onclick="window.location.reload()">New Test</button>
+    </div>
+    <div id="wrongQuestionsReviewPanel"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast-container"></div>
+
+<script>
+// ══════════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════════
+const API_BASE = 'https://nust-mock-test.YOUR_SUBDOMAIN.workers.dev'; // ← CHANGE THIS
+
+const FIELD_CONFIG = {
+  'engineering': {
+    label:'NET-Engineering', code:'ENG', description:'Engineering / Computing / ICS Stream', totalMCQs:200,
+    blueprint:{mathematics:100,physics:60,english:40},
+    bankKeys:{mathematics:'mathematics',physics:'physics',english:'english'}
+  },
+  'applied_sciences': {
+    label:'NET-Applied Sciences', code:'APS', description:'Pre-Medical / Applied Biosciences Stream', totalMCQs:200,
+    blueprint:{biology:100,chemistry:60,english:40},
+    bankKeys:{biology:'biology',chemistry:'chemistry',english:'english'}
+  },
+  'business_studies': {
+    label:'NET-Business Studies & Social Sciences', code:'BUS', description:'Business / Social Sciences Stream', totalMCQs:200,
+    blueprint:{quantitative_mathematics:100,english:100},
+    bankKeys:{quantitative_mathematics:'quantitative_mathematics',english:'english'}
+  },
+  'architecture': {
+    label:'NET-Architecture', code:'ARC', description:'Architecture / Industrial Design Stream', totalMCQs:200,
+    blueprint:{design_aptitude:100,mathematics:60,english:40},
+    bankKeys:{design_aptitude:'design_aptitude',mathematics:'mathematics',english:'english'}
+  },
+  'natural_sciences': {
+    label:'NET-Natural Sciences', code:'NSC', description:'Natural Sciences Stream', totalMCQs:200,
+    blueprint:{mathematics:100,english:100},
+    bankKeys:{mathematics:'mathematics',english:'english'}
+  }
+};
+
+const SECTION_LABELS = {
+  mathematics:'MATHEMATICS', physics:'PHYSICS', english:'ENGLISH',
+  biology:'BIOLOGY', chemistry:'CHEMISTRY',
+  quantitative_mathematics:'QUANTITATIVE MATHEMATICS', design_aptitude:'DESIGN APTITUDE'
+};
+
+// ══════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════
+let currentStudent = null;
+let selectedField = null;
+let activeTestSessionPool = [];
+let globalPointerIndex = 0;
+let totalSecondsRemaining = 180 * 60;
+let trackingIntervalEngine = null;
+
+// ══════════════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.dash-screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (el.classList.contains('screen')) el.classList.add('active');
+  else if (el.classList.contains('dash-screen')) el.classList.add('active');
+  else el.style.display = 'block';
+  document.getElementById('examPortalView').style.display = 'none';
+  document.getElementById('resultOverlay').classList.remove('active');
+}
+
+function toast(msg, type = 'info') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+  t.innerHTML = `<span>${icons[type] || '•'}</span> ${msg}`;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+function togglePw(id, btn) {
+  const el = document.getElementById(id);
+  if (el.type === 'password') { el.type = 'text'; btn.textContent = 'Hide'; }
+  else { el.type = 'password'; btn.textContent = 'Show'; }
+}
+
+async function apiCall(path, method = 'GET', body = null, adminToken = null) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json' }
+  };
+  if (adminToken) opts.headers['Authorization'] = `Bearer ${adminToken}`;
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(API_BASE + path, opts);
+  return res.json();
+}
+
+// ══════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════
+async function doStudentLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value.trim();
+  if (!username || !password) { toast('Please enter credentials', 'error'); return; }
+
+  try {
+    const data = await apiCall('/api/student/login', 'POST', { username, password });
+    if (data.error) { toast(data.error, 'error'); return; }
+    currentStudent = data.student;
+    sessionStorage.setItem('nust_student', JSON.stringify(currentStudent));
+
+    if (!currentStudent.bioDataSubmitted) {
+      showScreen('screen-biodata');
+    } else {
+      showDashboard();
+    }
+    toast(`Welcome, ${currentStudent.name}!`, 'success');
+  } catch(e) {
+    toast('Connection error. Please try again.', 'error');
+    console.error(e);
+  }
+}
+
+function doLogout() {
+  currentStudent = null;
+  selectedField = null;
+  sessionStorage.removeItem('nust_student');
+  if (trackingIntervalEngine) clearInterval(trackingIntervalEngine);
+  showScreen('screen-login');
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+}
+
+// ══════════════════════════════════════════════════
+// BIO DATA
+// ══════════════════════════════════════════════════
+async function submitBioData() {
+  const bioData = {
+    fullName: document.getElementById('bio-fullname').value.trim(),
+    dob: document.getElementById('bio-dob').value,
+    gender: document.getElementById('bio-gender').value,
+    cnic: document.getElementById('bio-cnic').value.trim(),
+    phone: document.getElementById('bio-phone').value.trim(),
+    email: document.getElementById('bio-email').value.trim(),
+    address: document.getElementById('bio-address').value.trim(),
+    matricBoard: document.getElementById('bio-matric-board').value,
+    matricYear: document.getElementById('bio-matric-year').value,
+    matricMarks: document.getElementById('bio-matric-marks').value,
+    matricTotal: document.getElementById('bio-matric-total').value,
+    interBoard: document.getElementById('bio-inter-board').value,
+    interYear: document.getElementById('bio-inter-year').value,
+    interMarks: document.getElementById('bio-inter-marks').value,
+    interTotal: document.getElementById('bio-inter-total').value,
+    interGroup: document.getElementById('bio-inter-group').value,
+    college: document.getElementById('bio-college').value.trim(),
+    nust1stChoice: document.getElementById('bio-nust1').value,
+    nust2ndChoice: document.getElementById('bio-nust2').value,
+    hearSource: document.getElementById('bio-source').value,
+    notes: document.getElementById('bio-notes').value.trim(),
+  };
+
+  const required = ['fullName','dob','gender','phone','matricBoard','interBoard','interGroup'];
+  for (const f of required) {
+    if (!bioData[f]) { toast(`Please fill all required fields (${f})`, 'error'); return; }
+  }
+
+  try {
+    const res = await apiCall('/api/student/biodata', 'POST', {
+      username: currentStudent.username,
+      bioData
+    });
+    if (res.error) { toast(res.error, 'error'); return; }
+    currentStudent.bioDataSubmitted = true;
+    toast('Profile saved successfully!', 'success');
+    showDashboard();
+  } catch(e) {
+    toast('Failed to save profile.', 'error');
+  }
+}
+
+// ══════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════
+function showDashboard() {
+  showScreen('screen-dashboard');
+  document.getElementById('screen-dashboard').classList.add('active');
+  document.getElementById('screen-dashboard').style.display = 'block';
+
+  document.getElementById('dash-welcome').textContent = `Welcome, ${currentStudent.name}`;
+  document.getElementById('dash-subtext').textContent = `ID: ${currentStudent.username} · NUST Mock Test Portal`;
+  loadMyTests();
+}
+
+async function loadMyTests() {
+  const el = document.getElementById('test-history-list');
+  el.innerHTML = '<p style="color:#94a3b8;font-size:13px;">Loading...</p>';
+  try {
+    const data = await apiCall(`/api/tests/${currentStudent.username}`);
+    const tests = data.tests || [];
+
+    document.getElementById('dash-total-tests').textContent = tests.length;
+    if (tests.length > 0) {
+      const scores = tests.map(t => t.score || 0);
+      document.getElementById('dash-best-score').textContent = Math.max(...scores) + '/200';
+      document.getElementById('dash-avg-score').textContent =
+        Math.round(scores.reduce((a,b) => a+b, 0) / scores.length) + '/200';
+    } else {
+      document.getElementById('dash-best-score').textContent = '–';
+      document.getElementById('dash-avg-score').textContent = '–';
+    }
+
+    if (tests.length === 0) {
+      el.innerHTML = '<p style="color:#94a3b8;font-size:13px;padding:10px 0;">No tests taken yet. Start your first assessment!</p>';
+      return;
+    }
+
+    let html = '';
+    tests.forEach(t => {
+      const d = new Date(t.savedAt).toLocaleString();
+      const pct = Math.round((t.score / t.totalMCQs) * 100);
+      html += `
+        <div class="history-card" onclick="viewTestResult('${t.username}','${t.testId}')">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+              <h4>${t.fieldLabel || 'Mock Test'}</h4>
+              <p>${d}</p>
+            </div>
+            <div class="score-pill">${t.score} / ${t.totalMCQs} (${pct}%)</div>
+          </div>
+        </div>`;
+    });
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = '<p style="color:#ef4444;font-size:13px;">Failed to load tests.</p>';
+  }
+}
+
+async function viewTestResult(username, testId) {
+  try {
+    const data = await apiCall(`/api/test/${username}/${testId}`);
+    if (data.error) { toast('Could not load test.', 'error'); return; }
+    displaySavedResult(data);
+  } catch(e) {
+    toast('Error loading test result.', 'error');
+  }
+}
+
+function displaySavedResult(data) {
+  document.getElementById('totalScoreTarget').textContent = `${data.score} / ${data.totalMCQs}`;
+  document.getElementById('subjectScoreBreakdownBox').innerHTML = data.breakdown || '';
+  document.getElementById('wrongQuestionsReviewPanel').innerHTML = data.reviewLog || '';
+
+  renderMathInElementSafe(document.getElementById('wrongQuestionsReviewPanel'));
+
+  // Hide exam, show result
+  document.getElementById('examPortalView').style.display = 'none';
+  document.getElementById('resultOverlay').classList.add('active');
+}
+
+// ══════════════════════════════════════════════════
+// FIELD SELECTION
+// ══════════════════════════════════════════════════
+function showFieldSelect() {
+  showScreen('screen-field');
+}
+
+function backToDashboard() {
+  document.getElementById('examPortalView').style.display = 'none';
+  document.getElementById('resultOverlay').classList.remove('active');
+  if (trackingIntervalEngine) clearInterval(trackingIntervalEngine);
+  showDashboard();
+}
+
+function selectField(el, val) {
+  document.querySelectorAll('.field-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  el.querySelector('input').checked = true;
+  selectedField = val;
+}
+
+// ══════════════════════════════════════════════════
+// EXAM ENGINE
+// ══════════════════════════════════════════════════
+function startExam() {
+  if (!selectedField) { toast('Please select a field', 'error'); return; }
+  if (typeof QUESTION_BANK === 'undefined') { toast('questions.js missing', 'error'); return; }
+  if (!QUESTION_BANK[selectedField]) { toast('No questions for this field', 'error'); return; }
+
+  const cfg = FIELD_CONFIG[selectedField];
+  document.getElementById('displayCandidateId').textContent = currentStudent.username;
+  document.getElementById('displayFieldCode').textContent = cfg.code;
+  document.getElementById('streamTitleBar').textContent = cfg.description + ' Mock Portal';
+
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.dash-screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('examPortalView').style.display = 'block';
+  document.getElementById('resultOverlay').classList.remove('active');
+
+  buildSectionButtons();
+  launchTestEngine();
+}
+
+function buildSectionButtons() {
+  const container = document.getElementById('sectionButtonsContainer');
+  // Remove old subject buttons
+  container.querySelectorAll('.btn-subject').forEach(b => b.remove());
+  const cfg = FIELD_CONFIG[selectedField];
+  for (const sec of Object.keys(cfg.blueprint)) {
+    const lbl = (SECTION_LABELS[sec] || sec).substring(0, 4);
+    const btn = document.createElement('button');
+    btn.className = 'retro-control-btn btn-subject';
+    btn.textContent = lbl;
+    btn.onclick = () => switchSubjectCluster(sec);
+    container.appendChild(btn);
+  }
+}
+
+function pullRandomPool(src, limit) {
+  if (!src || !src.length) return [];
+  let c = [...src].sort(() => 0.5 - Math.random());
+  while (c.length < limit) c = c.concat(c);
+  return c.slice(0, limit).map(i => ({ ...i, chosenIndexValue: null, isFlagged: false, isSavedPermanently: false }));
+}
+
+function launchTestEngine() {
+  activeTestSessionPool = [];
+  const cfg = FIELD_CONFIG[selectedField];
+  const fieldData = QUESTION_BANK[selectedField];
+  const bpOrder = Object.keys(cfg.blueprint);
+
+  for (const sec of bpOrder) {
+    const bankKey = cfg.bankKeys[sec];
+    if (fieldData[bankKey]) {
+      const qs = pullRandomPool(fieldData[bankKey], cfg.blueprint[sec]);
+      let cnt = 1;
+      qs.forEach(i => { i.innerIndexValue = cnt++; i.sectionKeyName = sec; });
+      activeTestSessionPool = activeTestSessionPool.concat(qs);
+    }
+  }
+
+  activeTestSessionPool.sort((a, b) => {
+    const oa = bpOrder.indexOf(a.sectionKeyName), ob = bpOrder.indexOf(b.sectionKeyName);
+    return oa !== ob ? oa - ob : a.innerIndexValue - b.innerIndexValue;
+  });
+
+  const counts = {};
+  activeTestSessionPool.forEach(i => {
+    if (!counts[i.sectionKeyName]) counts[i.sectionKeyName] = 0;
+    counts[i.sectionKeyName]++;
+    i.innerIndexValue = counts[i.sectionKeyName];
+  });
+
+  globalPointerIndex = 0;
+  totalSecondsRemaining = 180 * 60;
+  updateTimerDisplay();
+  if (trackingIntervalEngine) clearInterval(trackingIntervalEngine);
+  trackingIntervalEngine = setInterval(() => {
+    if (totalSecondsRemaining <= 0) { clearInterval(trackingIntervalEngine); compileExamResults(); }
+    else { totalSecondsRemaining--; updateTimerDisplay(); }
+  }, 1000);
+  refreshWorkspace();
+  generateNavMatrix();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(totalSecondsRemaining / 3600);
+  const m = Math.floor((totalSecondsRemaining % 3600) / 60);
+  const s = totalSecondsRemaining % 60;
+  document.getElementById('timerClockMinutes').textContent =
+    String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+function wrapMathEnvironments(text) {
+  const envs = ['matrix','pmatrix','bmatrix','Bmatrix','vmatrix','Vmatrix','array','cases','dcases','rcases','drcases','aligned','gathered','split','smallmatrix','subarray'];
+  let result = text;
+  for (const env of envs) {
+    const regex = new RegExp('(?<!\\$|\\\\\\()' + '(\\\\begin\\{' + env + '\\})' + '([\\s\\S]*?)' + '(\\\\end\\{' + env + '\\})' + '(?!\\$|\\\\\\))', 'g');
+    result = result.replace(regex, '$$$1$2$3$$');
+  }
+  return result;
+}
+
+function renderMathInElementSafe(element) {
+  if (typeof renderMathInElement !== 'function' || !element) return;
+  if (element.innerHTML) element.innerHTML = wrapMathEnvironments(element.innerHTML);
+  try {
+    renderMathInElement(element, {
+      delimiters: [
+        {left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},
+        {left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}
+      ],
+      throwOnError: false, errorColor: '#CC0000'
+    });
+  } catch(e) { console.warn('KaTeX:', e); }
+}
+
+function refreshWorkspace() {
+  if (!activeTestSessionPool.length) return;
+  const q = activeTestSessionPool[globalPointerIndex];
+  const label = SECTION_LABELS[q.sectionKeyName] || q.sectionKeyName.toUpperCase();
+  const cfg = FIELD_CONFIG[selectedField];
+
+  document.getElementById('currentSubjectHeader').innerHTML = label;
+  document.getElementById('questionNumTracker').innerHTML =
+    `Question No: ${q.innerIndexValue} of ${cfg.blueprint[q.sectionKeyName]} (${q.sectionKeyName.toUpperCase()})`;
+
+  const qBox = document.getElementById('questionTextBox');
+  let html = '';
+  if (q.passage) html += `<div class="passage-container"><div class="passage-label">Read carefully:</div>${q.passage}</div>`;
+  html += `<div class="question-text">${q.q}</div>`;
+  if (q.d) html += `<img class="question-diagram" src="${q.d}" alt="Diagram" style="max-width:100%;height:auto;display:block;margin:10px 0;">`;
+  qBox.innerHTML = html;
+  renderMathInElementSafe(qBox);
+
+  const cont = document.getElementById('optionsRadioGroup');
+  cont.innerHTML = '';
+  q.a.forEach((opt, idx) => {
+    const row = document.createElement('div');
+    row.className = 'option-row-item' + (q.chosenIndexValue === idx ? ' selected' : '');
+    row.setAttribute('data-opt-index', idx);
+    const span = document.createElement('span');
+    span.className = 'option-text';
+    span.innerHTML = opt;
+    row.appendChild(span);
+    cont.appendChild(row);
+  });
+  renderMathInElementSafe(cont);
+  cont.querySelectorAll('.option-row-item').forEach(row => {
+    row.addEventListener('click', function() {
+      q.chosenIndexValue = parseInt(this.getAttribute('data-opt-index'));
+      refreshWorkspace();
+    });
+  });
+
+  document.querySelectorAll('.nav-square-btn').forEach(b => {
+    b.classList.remove('active-focus');
+    if (parseInt(b.getAttribute('data-sid'), 10) === globalPointerIndex) b.classList.add('active-focus');
+  });
+}
+
+function generateNavMatrix() {
+  const grid = document.getElementById('navButtonMatrixGrid');
+  grid.innerHTML = '';
+  if (!activeTestSessionPool.length) return;
+  const cfg = FIELD_CONFIG[selectedField];
+  for (const sec of Object.keys(cfg.blueprint)) {
+    const label = SECTION_LABELS[sec] || sec.toUpperCase();
+    const sq = activeTestSessionPool.filter(i => i.sectionKeyName === sec);
+    if (!sq.length) continue;
+    const cols = Math.min(cfg.blueprint[sec], 20);
+    let html = `<div class="nav-section-label"><span>${label}</span></div>`;
+    html += `<div class="nav-sub-grid" style="grid-template-columns:repeat(${cols},1fr);">`;
+    sq.forEach(i => {
+      const gIdx = activeTestSessionPool.indexOf(i);
+      let cls = 'nav-square-btn';
+      if (i.isSavedPermanently) cls += ' filled';
+      if (i.isFlagged) cls += ' flagged-review';
+      if (gIdx === globalPointerIndex) cls += ' active-focus';
+      html += `<div class="${cls}" data-sid="${gIdx}" onclick="navigateTo(${gIdx})">${i.innerIndexValue}</div>`;
+    });
+    html += '</div>';
+    grid.innerHTML += html;
+  }
+}
+
+function navigateTo(gIdx) {
+  if (gIdx >= 0 && gIdx < activeTestSessionPool.length) {
+    globalPointerIndex = gIdx;
+    refreshWorkspace();
+    generateNavMatrix();
+  }
+}
+
+function saveAnswerState() {
+  const q = activeTestSessionPool[globalPointerIndex];
+  if (q.chosenIndexValue !== null) q.isSavedPermanently = true;
+  generateNavMatrix();
+  shiftActiveIndex(1);
+}
+
+function flagQuestionToggle() {
+  activeTestSessionPool[globalPointerIndex].isFlagged = !activeTestSessionPool[globalPointerIndex].isFlagged;
+  generateNavMatrix();
+}
+
+function shiftActiveIndex(step) {
+  const t = globalPointerIndex + step;
+  if (t >= 0 && t < activeTestSessionPool.length) {
+    globalPointerIndex = t;
+    refreshWorkspace();
+    generateNavMatrix();
+  }
+}
+
+function switchSubjectCluster(sec) {
+  const idx = activeTestSessionPool.findIndex(i => i.sectionKeyName === sec);
+  if (idx !== -1) { globalPointerIndex = idx; refreshWorkspace(); generateNavMatrix(); }
+}
+
+function triggerSubmitConfirmation() {
+  if (confirm('Do you want to finalise and submit your assessment?')) compileExamResults();
+}
+
+async function compileExamResults() {
+  if (trackingIntervalEngine) clearInterval(trackingIntervalEngine);
+  let score = 0;
+  const cfg = FIELD_CONFIG[selectedField];
+  const stats = {};
+  for (const k of Object.keys(cfg.blueprint)) stats[k] = 0;
+
+  const logs = {};
+  for (const k of Object.keys(cfg.blueprint)) logs[k] = '';
+
+  activeTestSessionPool.forEach(i => {
+    const correct = i.chosenIndexValue !== null && i.chosenIndexValue === i.c;
+    if (correct) { score++; stats[i.sectionKeyName]++; }
+    const chosen = i.chosenIndexValue !== null ? i.a[i.chosenIndexValue] : 'Unattempted';
+    const right = i.a[i.c];
+    const exp = i.e || 'No explanation.';
+    if (correct) {
+      logs[i.sectionKeyName] += `<div class="review-box-r correct"><p><strong>Q${i.innerIndexValue}:</strong> ${i.q}</p><p style="color:#22c55e;font-weight:700;margin-top:4px;">✅ Correct</p></div>`;
+    } else {
+      logs[i.sectionKeyName] += `<div class="review-box-r"><p><strong>Q${i.innerIndexValue}:</strong> ${i.q}</p><p style="color:#ef4444;font-weight:600;margin-top:4px;">❌ Your Answer: ${chosen}</p><p style="color:#22c55e;font-weight:600;">✅ Correct: ${right}</p><p style="color:#64748b;margin-top:6px;font-style:italic;background:#f1f5f9;padding:6px;border-left:3px solid #2563eb;border-radius:0 4px 4px 0;"><strong>Explanation:</strong> ${exp}</p></div>`;
+    }
+  });
+
+  let reviewHTML = `<h3 style="color:#1e3a5f;margin-bottom:12px;font-size:15px;">Detailed Question Review</h3>`;
+  for (const k of Object.keys(logs)) {
+    const lbl = SECTION_LABELS[k] || k.toUpperCase();
+    reviewHTML += `<div class="review-header-r">${lbl}</div>` + (logs[k] || '<p style="padding:10px;color:#94a3b8;font-size:13px;">No questions.</p>');
+  }
+
+  let bd = `<strong style="color:#1e3a5f;">Subject Breakdown — ${cfg.label}:</strong><br><br>`;
+  for (const k of Object.keys(stats)) {
+    const pct = Math.round((stats[k] / cfg.blueprint[k]) * 100);
+    bd += `• ${SECTION_LABELS[k] || k.toUpperCase()}: <strong>${stats[k]} / ${cfg.blueprint[k]}</strong> (${pct}%)<br>`;
+  }
+
+  document.getElementById('totalScoreTarget').textContent = `${score} / ${cfg.totalMCQs}`;
+  document.getElementById('subjectScoreBreakdownBox').innerHTML = bd;
+  document.getElementById('wrongQuestionsReviewPanel').innerHTML = reviewHTML;
+  renderMathInElementSafe(document.getElementById('wrongQuestionsReviewPanel'));
+
+  document.getElementById('examPortalView').style.display = 'none';
+  document.getElementById('resultOverlay').classList.add('active');
+
+  // Save to server
+  try {
+    const timeTaken = (180 * 60) - totalSecondsRemaining;
+    await apiCall('/api/tests', 'POST', {
+      username: currentStudent.username,
+      result: {
+        fieldKey: selectedField,
+        fieldLabel: cfg.label,
+        fieldCode: cfg.code,
+        score,
+        totalMCQs: cfg.totalMCQs,
+        timeTakenSeconds: timeTaken,
+        subjectStats: stats,
+        breakdown: bd,
+        reviewLog: reviewHTML,
+      }
+    });
+    toast('Test result saved!', 'success');
+  } catch(e) {
+    toast('Could not save result online.', 'error');
+  }
+}
+
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+window.addEventListener('load', () => {
+  const saved = sessionStorage.getItem('nust_student');
+  if (saved) {
+    currentStudent = JSON.parse(saved);
+    if (!currentStudent.bioDataSubmitted) showScreen('screen-biodata');
+    else showDashboard();
+  } else {
+    showScreen('screen-login');
+  }
+});
+
+// Security
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) {
+    e.preventDefault(); return false;
+  }
+});
+</script>
+</body>
+</html>
